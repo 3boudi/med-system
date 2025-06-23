@@ -108,3 +108,100 @@
 | تسجيل طبيب جديد           | المدير            | "طبيب جديد سجل في النظام ويحتاج إلى الموافقة" |
 
 ---
+✅ الخطوات التالية بعد تجهيز قاعدة البيانات:
+🔧 1. إنشاء Auth System للمستخدم، الطبيب، المدير
+كل واحد له تسجيل دخول منفصل:
+
+User: Register/Login
+
+Doctor: Register/Login + Approval by admin
+
+Admin: Login only (no register)
+
+✅ الأفضل: استعمل Laravel Fortify أو Sanctum لتأمين الـ API.
+
+📦 2. بناء API كاملة (REST أو JSON API) لكل Use Case:
+رتبتهم لك على شكل مهام جاهزة:
+
+👤 User Endpoints (API)
+الوظيفة	الميثود	Endpoint
+تسجيل حساب	POST	/api/user/register
+تسجيل دخول	POST	/api/user/login
+استعراض الأطباء	GET	/api/doctors?specialization=...
+إرسال طلب استشارة	POST	/api/consultations
+عرض الطلبات	GET	/api/user/consultations
+بدء المحادثة (بعد القبول)	GET	/api/chat/{consultation_id}
+إرسال رسالة	POST	/api/messages
+رفع صورة / ملف	POST	/api/messages/upload
+استعراض المحادثات	GET	/api/user/chats
+الإشعارات	GET	/api/user/notifications
+
+🧑‍⚕️ Doctor Endpoints (API)
+الوظيفة	الميثود	Endpoint
+تسجيل حساب	POST	/api/doctor/register
+تسجيل دخول	POST	/api/doctor/login
+إنشاء العيادة	POST	/api/clinic
+اختيار التخصصات	POST	/api/doctor/specializations
+عرض الطلبات	GET	/api/doctor/consultations
+قبول / رفض الطلب	POST	/api/consultations/{id}/respond
+بدء المحادثة	GET	/api/chat/{consultation_id}
+إرسال رسالة	POST	/api/messages
+إغلاق المحادثة	POST	/api/chat/{id}/close
+الإشعارات	GET	/api/doctor/notifications
+
+🛠️ Admin Endpoints
+الوظيفة	الميثود	Endpoint
+تسجيل دخول	POST	/api/admin/login
+عرض الأطباء	GET	/api/admin/doctors
+قبول / رفض طبيب	POST	/api/admin/doctors/{id}/status
+عرض المستخدمين	GET	/api/admin/users
+إدارة التخصصات	GET/POST/PUT/DELETE	/api/admin/specializations
+عرض الإحصائيات	GET	/api/admin/stats
+الإشعارات	GET	/api/admin/notifications
+
+📌 3. إرسال الإشعارات (notifications)
+❗ مهم: كل Endpoint مرتبط بـ Notification لازم يدعم إرسال إشعار فورًا:
+
+عند تسجيل الطبيب → إشعار للإدمن
+
+عند إرسال طلب → إشعار للطبيب + الإدمن
+
+عند قبول / رفض الطلب → إشعار للمستخدم
+
+عند إغلاق المحادثة → إشعار للمستخدم
+
+✅ حطها داخل NotificationService class أو استخدم Laravel Events & Listeners.
+
+🛡️ 4. تأمين API عبر Sanctum أو Passport
+كل من:
+
+User
+
+Doctor
+
+Admin
+يحتاج حماية خاصة بتوكيناته عشان تعرف كل واحد وصلاحياته.
+
+✅ Laravel Sanctum هو الأبسط.
+
+✅ 5. التوثيق الجاهز لفريق Flutter
+سوِّ لهم:
+
+Postman Collection (كل Endpoints + Sample Response)
+
+أو Swagger/OpenAPI إن قدرت
+
+🧠 نصيحة عملية
+ابدأ حسب الأولوية:
+
+User auth
+
+Doctor auth
+
+Consultation flow (Send / Accept / Reject)
+
+Messaging
+
+Notifications
+
+Admin Panel APIs
