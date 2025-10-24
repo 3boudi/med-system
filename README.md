@@ -109,7 +109,18 @@
 
 ---
 
+## 🚀 Features
 
+- **Real-time Messaging** - Live chat between users and doctors
+- **Multi-role Authentication** - Separate authentication for users, doctors, and admins
+- **Doctor Approval Workflow** - Admin-controlled doctor registration approval
+- **Medical Specializations** - 37 medical specialties with doctor categorization
+- **Consultation Management** - Request, accept, and manage medical consultations
+- **File Sharing** - Support for text, image, and file messages
+- **Email Verification** - Secure user registration with email confirmation
+- **Google OAuth** - Social authentication for users
+- **Clinic Management** - Doctor clinic information and details
+- **Notification System** - Polymorphic notifications for all user types
 
 ## 🗄️ Database Schema
 
@@ -258,37 +269,144 @@ The system includes 37 medical specializations:
 - Polymorphic notifications for users, doctors, and admins
 - Supports different notification types with JSON data storage
 - Tracks read status and creation time
+# Healthcare Consultation Platform
 
+
+---
+## 🛡️ Middleware Protection
+
+### **Authentication Guards**
+- `user.guard` - Protects user-specific routes
+- `doctor.guard` - Protects doctor-specific routes  
+- `admin.guard` - Protects admin-specific routes
+- `auth:sanctum` - General API authentication
+
+## 🛠️ Controllers & Models
+
+### **Authentication Controllers**
+
+#### UserAuthController
+- `register()` - User registration with email verification
+- `login()` - User email/password login
+- `logout()` - User logout with token revocation
+- `redirectToGoogle()` - OAuth Google redirect (Web)
+- `handleGoogleCallback()` - OAuth Google callback (Web)
+- `loginWithGoogle()` - OAuth Google login (Mobile)
+
+#### DoctorAuthController
+- `register()` - Doctor registration with clinic creation and specialization attachment
+- `login()` - Doctor login with status validation
+- `logout()` - Doctor logout
+
+#### AdminAuthController
+- `login()` - Admin login with email/name support
+- `logout()` - Admin logout
+
+#### EmailVerificationController
+- `verify()` - Email verification endpoint
+
+### **Business Logic Controllers**
+
+#### UserController
+- `profile()` - Get user profile
+- `showAllSpecializations()` - List all medical specializations
+- `doctorsBySpecialization()` - Get doctors filtered by specialization
+- `doctorDetails()` - Get detailed doctor information
+- `requestConsultation()` - Create consultation request
+- `showAllReqeustsConsultation()` - Get user's consultation requests
+- `userChats()` - Get user's chat sessions
+
+#### DoctorController
+- `profile()` - Get doctor profile with clinic and specializations
+- `pendingConsultationRequests()` - Get pending consultation requests
+- `respondToConsultation()` - Accept/reject consultation requests
+- `closeChat()` - Close chat session
+- `doctorChats()` - Get doctor's chat sessions
+
+#### AdminController
+- `createAdmin()` - Create new admin account
+- `pendingDoctors()` - Get doctors pending approval
+- `acceptDoctor()` - Approve doctor registration
+- `rejectDoctor()` - Reject doctor registration
+- `profile()` - Get admin profile
+
+#### ChatController
+- `sendMessage()` - Send message with file support
+- `closeChat()` - Close chat session
+- `getMessages()` - Retrieve chat messages with participant validation
+
+### **Middleware**
+
+#### Authentication Middleware
+- `AuthenticateUser` - Validates user tokens and sets user context
+- `AuthenticateDoctor` - Validates doctor tokens and sets doctor context  
+- `AuthenticateAdmin` - Validates admin tokens and sets admin context
+- `SetGuard` - Dynamically sets authentication guard
+
+### **Models**
+
+#### Core Models
+- **User** - Authenticatable user with email verification
+- **Doctor** - Authenticatable doctor with clinic relationship
+- **Admin** - Authenticatable admin user
+
+#### Domain Models
+- **Specialization** - Medical specializations with doctor relationships
+- **Clinic** - Healthcare clinics with location data
+- **ConsultationRequest** - Consultation requests between users and doctors
+- **Chat** - Chat sessions linked to consultations
+- **Message** - Chat messages with polymorphic senders
+- **Notification** - Polymorphic notifications system
+- **DoctorSpecialization** - Pivot model for doctor-specialization relationships
+
+### **Key Model Relationships**
+
+```php
+// User relationships
+User::consultationRequests() → hasMany(ConsultationRequest::class)
+
+// Doctor relationships  
+Doctor::clinic() → belongsTo(Clinic::class)
+Doctor::specializations() → belongsToMany(Specialization::class)
+Doctor::consultationRequests() → hasMany(ConsultationRequest::class)
+
+// ConsultationRequest relationships
+ConsultationRequest::user() → belongsTo(User::class)
+ConsultationRequest::doctor() → belongsTo(Doctor::class) 
+ConsultationRequest::chat() → hasOne(Chat::class)
+
+// Chat relationships
+Chat::consultationRequest() → belongsTo(ConsultationRequest::class)
+Chat::messages() → hasMany(Message::class)
+
+// Message relationships (Polymorphic)
+Message::sender() → morphTo()
 ## 🚀 Installation & Setup
 
-1. Clone the repository
-2. Run `composer install`
-3. Copy `.env.example` to `.env` and configure database
-4. Run `php artisan migrate`
-5. Run `php artisan db:seed` (if seeders are available)
+```
 
-## 📝 Migration Order
+---
 
-Run migrations in this order to respect foreign key dependencies:
+## 🔄 Workflow Summary
 
-1. `0001_01_01_000000_create_users_table.php`
-2. `0001_01_01_000001_create_cache_table.php`
-3. `0001_01_01_000002_create_jobs_table.php`
-4. `2025_06_24_223547_create_personal_access_tokens_table.php`
-5. `2025_06_24_224138_create_doctors_table.php`
-6. `2025_06_24_224315_create_admins_table.php`
-7. `2025_06_24_224739_create_specializations_table.php`
-8. `2025_06_24_225040_create_clinics_table.php`
-9. `2025_06_24_225139_create_consultation_requests_table.php`
-10. `2025_06_24_225211_create_chats_table.php`
-11. `2025_06_24_225417_create_messages_table.php`
-12. `2025_06_24_225606_create_notifications_table.php`
-13. `2025_07_01_134731_create_doctor_specialization_table.php`
+### **User Journey**
+1. **Register/Login** → Create account or sign in
+2. **Verify Email** → Confirm email address for security
+3. **Browse Specializations** → Explore medical specialties
+4. **View Doctors** → See available healthcare providers
+5. **Request Consultation** → Send consultation request to chosen doctor
+6. **Chat** → Communicate with doctor in real-time
 
-## 🤝 Contributing
+### **Doctor Journey**
+1. **Register** → Create doctor account with credentials
+2. **Wait for Admin Approval** → Account remains pending until approved
+3. **Login** → Access platform after approval
+4. **View Consultation Requests** → See pending consultation requests
+5. **Accept/Reject** → Respond to patient requests
+6. **Chat** → Engage in medical consultations with patients
 
-Please read our contributing guidelines before submitting pull requests.
-
-## 📄 License
-
-This project is licensed under the MIT License.
+### **Admin Journey**
+1. **Login** → Access admin dashboard
+2. **View Pending Doctors** → Review doctor registration requests
+3. **Accept/Reject Doctors** → Approve or deny doctor applications
+4. **Manage Platform** → Oversee platform operations and users
