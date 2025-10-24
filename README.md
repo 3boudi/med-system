@@ -247,30 +247,62 @@ The system includes 37 medical specializations:
 - Urology
 - Vascular Surgery
 
-## 🎯 Business Logic
 
-### Doctor Approval Workflow
-- Doctors register with `pending` status
-- Admins can change status to `accepted` or `rejected`
-- Only accepted doctors can receive consultation requests
+## 🌐 API Routes
 
-### Consultation Request Flow
-1. User sends consultation request to doctor (`pending`)
-2. Doctor accepts or rejects request
-3. If accepted, a chat is automatically created
-4. Chat remains active until manually closed
+### **User Routes** (`/api/user`)
+- `POST /register` - Register new user
+- `POST /login` - User login  
+- `POST /login/google` - Google OAuth login
+- `POST /logout` - User logout (protected)
+- `GET /profile` - Get user profile (protected)
+- `GET /specializations` - Get all medical specializations
+- `GET /specializations/{id}/doctors` - Get doctors by specialization
+- `GET /doctors/{id}` - Get doctor details
+- `POST /doctor/{id}/request-consultation` - Request consultation
+- `GET /all-requests-consultation` - Get user's consultation requests
+- `GET /chats` - Get user's chats
+- `GET /chats/{chat}/messages` - Get chat messages
+- `POST /chats/{chat}/send` - Send message in chat
 
-### Messaging System
-- Supports text, image, and file messages
-- Messages are polymorphic (can be from users or doctors)
-- File attachments stored as JSON for flexibility
+### **Doctor Routes** (`/api/doctor`)
+- `POST /register` - Register new doctor
+- `POST /login` - Doctor login
+- `POST /logout` - Doctor logout (protected)
+- `GET /profile` - Get doctor profile (protected)
+- `GET /consultation/pending` - Get pending consultation requests
+- `POST /consultation/{id}/respond` - Respond to consultation request
+- `GET /chats` - Get doctor's chats
+- `GET /chats/{chat}/messages` - Get chat messages
+- `POST /chats/{chat}/send` - Send message in chat
+- `POST /chat/{id}/close` - Close chat
 
-### Notification System
-- Polymorphic notifications for users, doctors, and admins
-- Supports different notification types with JSON data storage
-- Tracks read status and creation time
-# Healthcare Consultation Platform
+### **Admin Routes** (`/api/admin`)
+- `POST /login` - Admin login
+- `POST /logout` - Admin logout (protected)
+- `GET /profile` - Get admin profile (protected)
+- `POST /create` - Create new admin
+- `GET /pending` - Get pending doctors for approval
+- `POST /doctor/{id}/accept` - Accept doctor registration
+- `POST /doctor/{id}/reject` - Reject doctor registration
 
+### **Authentication & Verification**
+- `GET /email/verify/{id}/{hash}` - Verify email address
+- `POST /email/verification-notification` - Resend verification email
+- `POST /chat/send` - General message sending endpoint
+
+## 📡 Broadcast Channels
+
+### **Real-time Chat Channel**
+```php
+Broadcast::channel('chat.{chatId}', function ($user, $chatId) {
+    return \App\Models\Chat::where('id', $chatId)
+        ->whereHas('consultationRequest', function ($query) use ($user) {
+            $query->where('user_id', $user->id)
+                  ->orWhere('doctor_id', $user->id);
+        })->exists();
+});
+```
 
 ---
 ## 🛡️ Middleware Protection
@@ -342,6 +374,31 @@ The system includes 37 medical specializations:
 - `AuthenticateDoctor` - Validates doctor tokens and sets doctor context  
 - `AuthenticateAdmin` - Validates admin tokens and sets admin context
 - `SetGuard` - Dynamically sets authentication guard
+
+## 🎯 Business Logic
+
+### Doctor Approval Workflow
+- Doctors register with `pending` status
+- Admins can change status to `accepted` or `rejected`
+- Only accepted doctors can receive consultation requests
+
+### Consultation Request Flow
+1. User sends consultation request to doctor (`pending`)
+2. Doctor accepts or rejects request
+3. If accepted, a chat is automatically created
+4. Chat remains active until manually closed
+
+### Messaging System
+- Supports text, image, and file messages
+- Messages are polymorphic (can be from users or doctors)
+- File attachments stored as JSON for flexibility
+
+### Notification System
+- Polymorphic notifications for users, doctors, and admins
+- Supports different notification types with JSON data storage
+- Tracks read status and creation time
+# Healthcare Consultation Platform
+
 
 ### **Models**
 
