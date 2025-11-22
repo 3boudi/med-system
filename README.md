@@ -1,8 +1,8 @@
-###Use Case Documentation:
+#Use Case Documentation:
 
 ---
 
-##USER USE CASES:
+#USER USE CASES:
 
 1. Register Account: The user creates an account with name, email, and password.
 2. Login: The user logs into the system.
