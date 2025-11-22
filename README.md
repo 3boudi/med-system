@@ -1,8 +1,11 @@
-#Use Case Documentation:
+
+
+
+### Use Case Documentation:
 
 ---
 
-#USER USE CASES:
+### USER USE CASES:
 
 1. Register Account: The user creates an account with name, email, and password.
 2. Login: The user logs into the system.
@@ -16,7 +19,7 @@
 
 ---
 
-##DOCTOR USE CASES:
+## DOCTOR USE CASES:
 
 1. Register Doctor Profile: The doctor registers with name, email, phone, and password.
 2. Create Clinic Profile: The doctor sets up clinic information (name, location, description, optional photo).
@@ -31,7 +34,7 @@
 
 ---
 
-##ADMIN USE CASES:
+## ADMIN USE CASES:
 
 1. Login: Admin logs into the system.
 2. View Doctors: Admin sees all registered doctors.
@@ -43,7 +46,7 @@
 
 ---
 
-##SYSTEM NOTIFICATIONS TABLE:
+## SYSTEM NOTIFICATIONS TABLE:
 
 | Trigger                         | Notification Target | Content                                        |
 | ------------------------------- | ------------------- | ---------------------------------------------- |
